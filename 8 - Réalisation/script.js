@@ -1,53 +1,50 @@
-const taskInput = document.getElementById('taskInput');
-            const addBtn = document.getElementById('addBtn');
-            const taskList = document.getElementById('taskList');
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+let input = document.getElementById("taskInput");
+let btn = document.getElementById("addBtn");
+let list = document.getElementById("taskList");
 
-            function renderTasks() {
-            taskList.innerHTML = '';
-            tasks.forEach((task, index) => {
-                const li = document.createElement('li');
-                li.className = 'task' + (task.completed ? ' completed' : '');
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.checked = task.completed;
-                checkbox.addEventListener('change', () => toggleTask(index));
-                const span = document.createElement('span');
-                span.textContent = task.text;
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Supprimer';
-                
-                deleteBtn.addEventListener('click', () => deleteTask(index));
-                li.appendChild(checkbox);
-                li.appendChild(span);
-                li.appendChild(deleteBtn);
-                taskList.appendChild(li);
-            });
-        }
+function load() {
+  const saved = localStorage.getItem("tasks");
+  if (!saved) return;
 
-        function addTask() {
-            const text = taskInput.value.trim();
-            if (text) {
-                tasks.push({ text, completed: false });
-                taskInput.value = '';
-                saveTasks();
-                renderTasks();
-            }
-       
-        }
+  const tasks = JSON.parse(saved);
+  tasks.forEach(task => {
+    addTask(task.text, task.done);
+  });
+}
 
-        function deleteTask(index) {
-            tasks.splice(index, 1);
-            saveTasks();
-            renderTasks();
-        }
+function save() {
+  let tasks = [];
+  list.querySelectorAll("li").forEach(li => {
+    tasks.push({
+      text: li.querySelector("span").textContent,
+      done: li.querySelector("input").checked
+    });
+  });
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
 
-        function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-        }
-        
-        addBtn.addEventListener('click', addTask);
-        taskInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addTask();
-        });
-        renderTasks();
+function addTask(text, done = false) {
+  let li = document.createElement("li");
+  li.innerHTML = `<input type="checkbox" ${done ? "checked" : ""}> <span>${text}</span> <button>Delete</button>`;
+
+  li.querySelector("input").addEventListener("change", () => {
+    li.querySelector("span").style.textDecoration = li.querySelector("input").checked ? "line-through" : "none";
+    save();
+  });
+
+  li.querySelector("button").addEventListener("click", () => {
+    li.remove();
+    save();
+  });
+
+  list.appendChild(li);
+}
+
+btn.addEventListener("click", () => {
+  if (input.value.trim() === "") return alert("Please enter a task");
+  addTask(input.value);
+  input.value = "";
+  save();
+});
+
+load();
