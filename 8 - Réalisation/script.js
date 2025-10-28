@@ -1,50 +1,29 @@
 let input = document.getElementById("taskInput");
 let btn = document.getElementById("addBtn");
-let list = document.getElementById("taskList");
+let list = document.getElementById("taskList"); 
 
-function load() {
-  const saved = localStorage.getItem("tasks");
-  if (!saved) return;
+btn.onclick = function() {
+  if (input.value === "") return alert("insert some text");
 
-  const tasks = JSON.parse(saved);
-  tasks.forEach(task => {
-    addTask(task.text, task.done);
-  });
-}
-
-function save() {
-  let tasks = [];
-  list.querySelectorAll("li").forEach(li => {
-    tasks.push({
-      text: li.querySelector("span").textContent,
-      done: li.querySelector("input").checked
-    });
-  });
-  localStorage.setItem("tasks", JSON.stringify(tasks));
-}
-
-function addTask(text, done = false) {
   let li = document.createElement("li");
-  li.innerHTML = `<input type="checkbox" ${done ? "checked" : ""}> <span>${text}</span> <button>Delete</button>`;
-
-  li.querySelector("input").addEventListener("change", () => {
-    li.querySelector("span").style.textDecoration = li.querySelector("input").checked ? "line-through" : "none";
-    save();
-  });
-
-  li.querySelector("button").addEventListener("click", () => {
-    li.remove();
-    save();
-  });
-
+  li.innerHTML = "<input type='checkbox'> <span>" + input.value + "</span> <button>delete</button>";
   list.appendChild(li);
-}
-
-btn.addEventListener("click", () => {
-  if (input.value.trim() === "") return alert("Please enter a task");
-  addTask(input.value);
   input.value = "";
   save();
-});
+};
 
+list.onclick = function(e) {
+  if (e.target.tagName === "BUTTON") e.target.parentElement.remove();
+  if (e.target.type === "checkbox")
+    e.target.parentElement.style.textDecoration = e.target.checked ? "line-through" : "none";
+  save();
+};
+
+function save() {
+  localStorage.setItem("tasks", list.innerHTML);
+}
+
+function load() {
+  list.innerHTML = localStorage.getItem("tasks");
+}
 load();
